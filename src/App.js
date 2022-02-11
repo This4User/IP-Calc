@@ -2,21 +2,24 @@ import React, {useState} from "react";
 import {Button, FormItem, FormLayout, FormLayoutGroup, Input} from "@vkontakte/vkui";
 
 const Calc = () => {
-    const [ ipString, setIpString ] = useState('');
-    const [ mask, setMask ] = useState('');
-    const [ maskResult, setMaskResult ] = useState('');
-    const [ hosts, setHosts ] = useState(0);
-    const [ broadcast, setBroadcast] = useState('');
-    const [ address, setAddress ] = useState('')
+    const [ipString, setIpString] = useState('');
+    const [mask, setMask] = useState('');
+    const [maskResult, setMaskResult] = useState('');
+    const [hosts, setHosts] = useState(0);
+    const [broadcast, setBroadcast] = useState('');
+    const [address, setAddress] = useState('');
 
-    const calcAddresses =(mask, ipString)=>{
+    const [showResult, setShowResult] = useState(false)
+
+    const isCanCalc = !(ipString.length !== 0 && mask && mask >= 0 && mask <=
+        32 && ipString.split('.').every(e => e <= 255 && e >= 0))
+
+    const calcAddresses = (mask, ipString) => {
         const maskBitLength = [0, 128, 192, 224, 240, 248, 252, 254, 255]
         let maskResult = [];
         let ip = ipString.split('.');
-
         //Расчёт количества адресов
         setHosts(Math.pow(2, 32 - mask));
-
         //Расчёт маски
         const calcMaskResult = () => {
             let notFullOct = mask % 8;
@@ -32,9 +35,7 @@ const Calc = () => {
             }
             setMaskResult(maskResult.join('.'));
         };
-
         calcMaskResult();
-
         //Адрес сети и широковещательный адрес
         let magicNumber;
         let octMagicNumber;
@@ -42,20 +43,17 @@ const Calc = () => {
             if (maskResult[i] !== 255 && maskResult[i] !== 0) {
                 magicNumber = 256 - maskResult[i];
                 octMagicNumber = i;
-                console.log(`Магическое число: ${magicNumber}`);
             } else if (!magicNumber) {
                 magicNumber = 0;
                 octMagicNumber = -1;
-                console.log(`Магическое число: ${magicNumber}`);
             }
         }
-
-        if (magicNumber !== 0 && octMagicNumber !== -1){
+        if (magicNumber !== 0 && octMagicNumber !== -1) {
             const octMagicIP = ip[octMagicNumber];
             let addressOct;
             let broadcastOct;
             for (let i = 0; i <= 255; i += magicNumber) {
-                if ( octMagicIP >= i
+                if (octMagicIP >= i
                     && octMagicIP < (i + magicNumber)
                     && (i + magicNumber < 256)
                 ) {
@@ -63,10 +61,8 @@ const Calc = () => {
                     broadcastOct = i;
                 }
             }
-
             //Нахождение адреса сети
             let address = [];
-
             for (let i = 0; i < ip.length; i++) {
                 if (maskResult[i] === 255) {
                     address[i] = ip[i];
@@ -75,17 +71,14 @@ const Calc = () => {
                     addressOct = 0;
                 }
             }
-            console.log(address)
             setAddress(address.join('.'));
-
             //Нахождение широковещательного адреса
             let broadcast = [];
-
             for (let i = 0; i < ip.length; i++) {
                 if (maskResult[i] === 255) {
                     broadcast[i] = ip[i];
                 } else {
-                    if (broadcastOct + magicNumber < 256){
+                    if (broadcastOct + magicNumber < 256) {
                         broadcast[i] = broadcastOct + magicNumber - 1;
                         broadcastOct = 255;
                     } else {
@@ -104,9 +97,7 @@ const Calc = () => {
                     address[i] = 0;
                 }
             }
-            console.log(address)
             setAddress(address.join('.'));
-
             //Широковещательный адрес
             let broadcast = [];
             for (let i = 0; i < ip.length; i++) {
@@ -118,7 +109,17 @@ const Calc = () => {
             }
             setBroadcast(broadcast.join('.'))
         }
+        setShowResult(true)
     };
+    const clearInputs = () => {
+        setIpString('');
+        setMask('');
+        setMaskResult('');
+        setHosts(0);
+        setBroadcast('');
+        setAddress('');
+        setShowResult(false)
+    }
 
     return (
         <>
@@ -129,62 +130,71 @@ const Calc = () => {
                             type="text"
                             placeholder={'192.212.23.76'}
                             value={ipString}
-                            onChange={(e)=> setIpString(e.target.value)}
-                            />
+                            onChange={(e) => setIpString(e.target.value)}
+                        />
                     </FormItem>
                     <FormItem top={'Маска'}>
                         <Input
                             type="text"
                             placeholder={'25'}
                             value={mask}
-                            onChange={(e)=> setMask(e.target.value)}
+                            onChange={(e) => setMask(e.target.value)}
                         />
                     </FormItem>
                 </FormLayoutGroup>
-                <FormLayoutGroup mode={'horizontal'}>
-                    <FormItem top={'Маска'}>
-                        <Input
-                            type="text"
-                            placeholder={'255.255.255.255'}
-                            value={maskResult}
-                            readOnly
-                        />
-                    </FormItem>
-                    <FormItem top={'Колличество адресов'}>
-                        <Input
-                            type="text"
-                            placeholder={'928'}
-                            value={hosts}
-                            readOnly
-                        />
-                    </FormItem>
-                </FormLayoutGroup>
-                <FormLayoutGroup mode={'horizontal'}>
-                    <FormItem top={'Адрес сети'}>
-                        <Input
-                            type="text"
-                            placeholder={'255.255.255.255'}
-                            value={address}
-                            readOnly
-                        />
-                    </FormItem>
-                    <FormItem top={'Широковещательный адрес'}>
-                        <Input
-                            type="text"
-                            placeholder={'255.255.255.255'}
-                            value={broadcast}
-                            readOnly
-                        />
-                    </FormItem>
-                </FormLayoutGroup>
+                {
+                    showResult ? <>
+                        <FormLayoutGroup mode={'horizontal'}>
+                            <FormItem top={'Маска'}>
+                                <Input
+                                    type="text"
+                                    placeholder={'255.255.255.255'}
+                                    value={maskResult}
+                                    readOnly
+                                />
+                            </FormItem>
+                            <FormItem top={'Колличество адресов'}>
+                                <Input
+                                    type="text"
+                                    placeholder={'928'}
+                                    value={hosts}
+                                    readOnly
+                                />
+                            </FormItem>
+                        </FormLayoutGroup>
+                        <FormLayoutGroup mode={'horizontal'}>
+                            <FormItem top={'Адрес сети'}>
+                                <Input
+                                    type="text"
+                                    placeholder={'255.255.255.255'}
+                                    value={address}
+                                    readOnly
+                                />
+                            </FormItem>
+                            <FormItem top={'Широковещательный адрес'}>
+                                <Input
+                                    type="text"
+                                    placeholder={'255.255.255.255'}
+                                    value={broadcast}
+                                    readOnly
+                                />
+                            </FormItem>
+                        </FormLayoutGroup>
+                    </> : null
+                }
                 <FormItem>
                     <Button
+                        disabled={isCanCalc}
                         size={'l'}
-                        onClick={()=>{
-                            calcAddresses(mask, ipString);
+                        onClick={() => {
+                            if (showResult) {
+                                clearInputs()
+                            } else {
+                                calcAddresses(mask, ipString);
+                            }
                         }}
                     >
-                        Рассчитать
+                        {showResult ? "Очистить" : "Рассчитать"}
                     </Button>
                 </FormItem>
             </FormLayout>
