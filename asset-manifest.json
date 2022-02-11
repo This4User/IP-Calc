@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.js": "/IP-Calc/static/js/main.ea1e903e.chunk.js",
-    "main.js.map": "/IP-Calc/static/js/main.ea1e903e.chunk.js.map",
+    "main.js": "/IP-Calc/static/js/main.b4429597.chunk.js",
+    "main.js.map": "/IP-Calc/static/js/main.b4429597.chunk.js.map",
     "runtime-main.js": "/IP-Calc/static/js/runtime-main.6b8c0216.js",
     "runtime-main.js.map": "/IP-Calc/static/js/runtime-main.6b8c0216.js.map",
     "static/css/2.67835744.chunk.css": "/IP-Calc/static/css/2.67835744.chunk.css",
@@ -15,6 +15,6 @@
     "static/js/runtime-main.6b8c0216.js",
     "static/css/2.67835744.chunk.css",
     "static/js/2.e33d2cc0.chunk.js",
-    "static/js/main.ea1e903e.chunk.js"
+    "static/js/main.b4429597.chunk.js"
   ]
 }
